@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-container">
+    <img src="{{ url_for('static', filename='images/blujay_logo.jpg') }}" alt="BluJay Technologies" class="company-logo img-fluid mb-4">
+    <h2>Register</h2>
+    <form method="POST" action="{{ url_for('main.register') }}">
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <div class="form-group">
+            <label for="role">Role:</label>
+            <select id="role" name="role" required>
+                <option value="candidate">Candidate</option>
+                <option value="hr">HR</option>
+            </select>
+        </div>
+        <button type="submit">Register</button>
+    </form>
+    <p>Already have an account? <a href="{{ url_for('main.login') }}">Login here</a></p>
+</div>
+{% endblock %}
