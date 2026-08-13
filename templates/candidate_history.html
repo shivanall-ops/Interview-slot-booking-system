@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-header">
+        <h2>Candidate Interview History</h2>
+        <p>Candidate: {{ candidate.name }} ({{ candidate.email }})</p>
+        <a href="{{ url_for('main.hr_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+    <div class="dashboard-content">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Current System Interview History</h4>
+            </div>
+            <div class="card-body">
+                {% if history %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Interview Round</th>
+                                <th>Interview Date</th>
+                                <th>Interview Time</th>
+                                <th>License</th>
+                                <th>Company Name</th>
+                                <th>Technology</th>
+                                <th>Support Person</th>
+                                <th>Interview Status</th>
+                                <th>Interview Feedback</th>
+                                <th>Final Result</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in history %}
+                            <tr>
+                                <td>{{ booking.interview_round or '-' }}</td>
+                                <td>{{ booking.interview_date }}</td>
+                                <td>{{ booking.start_time }} - {{ booking.end_time }}</td>
+                                <td>{{ booking.license_name }}</td>
+                                <td>{{ booking.company_name or '-' }}</td>
+                                <td>{{ booking.technology or '-' }}</td>
+                                <td>{{ booking.support_person or '-' }}</td>
+                                <td>
+                                    {% if booking.booking_status == 'confirmed' %}
+                                        {% if booking.interview_completed %}
+                                            <span class="badge bg-success">Completed</span>
+                                        {% else %}
+                                            <span class="badge bg-info">Scheduled</span>
+                                        {% endif %}
+                                    {% elif booking.booking_status == 'cancelled' %}
+                                        <span class="badge bg-danger">Cancelled</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ booking.booking_status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ booking.interview_feedback or '-' }}</td>
+                                <td>
+                                    {% if booking.interview_result %}
+                                        <span class="badge {% if booking.interview_result == 'Selected' %}bg-success{% elif booking.interview_result == 'Rejected' %}bg-danger{% else %}bg-warning{% endif %}">{{ booking.interview_result }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Pending</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No interview history found for this candidate.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0">Previous Interview Status (External History)</h4>
+            </div>
+            <div class="card-body">
+                {% if previous_history %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Company Name</th>
+                                <th>Interview Round</th>
+                                <th>Interview Date</th>
+                                <th>Result</th>
+                                <th>Remarks</th>
+                                <th>Added On</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for hist in previous_history %}
+                            <tr>
+                                <td>{{ hist.company_name }}</td>
+                                <td>{{ hist.interview_round }}</td>
+                                <td>{{ hist.interview_date }}</td>
+                                <td>
+                                    {% if hist.result == 'Selected' %}
+                                        <span class="badge bg-success">{{ hist.result }}</span>
+                                    {% elif hist.result == 'Rejected' %}
+                                        <span class="badge bg-danger">{{ hist.result }}</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">{{ hist.result }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ hist.remarks or '-' }}</td>
+                                <td>{{ hist.created_at }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No previous interview history provided by this candidate.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

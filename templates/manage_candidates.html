@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Manage Candidates</h2>
+        <a href="{{ url_for('main.create_candidate') }}" class="btn btn-primary">Create Candidate</a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for candidate in candidates %}
+                <tr>
+                    <td>{{ candidate.id }}</td>
+                    <td>{{ candidate.name }}</td>
+                    <td>{{ candidate.email }}</td>
+                    <td>
+                        {% if candidate.is_active == 1 %}
+                            <span class="badge badge-success">Active</span>
+                        {% else %}
+                            <span class="badge badge-danger">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('main.edit_candidate', user_id=candidate.id) }}" class="btn btn-sm btn-info">Edit</a>
+                        <form action="{{ url_for('main.toggle_candidate_status', user_id=candidate.id) }}" method="POST" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-warning">
+                                {% if candidate.is_active == 1 %}Deactivate{% else %}Activate{% endif %}
+                            </button>
+                        </form>
+                        <a href="{{ url_for('main.reset_candidate_password', user_id=candidate.id) }}" class="btn btn-sm btn-secondary">Reset Password</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">No candidates found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-3">
+        <a href="{{ url_for('main.hr_dashboard') }}" class="btn btn-secondary">Back to HR Dashboard</a>
+    </div>
+</div>
+{% endblock %}

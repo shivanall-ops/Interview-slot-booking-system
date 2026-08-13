@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="d-flex">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4>HR Dashboard</h4>
+            <p class="sidebar-user">Welcome, {{ user_name }}!</p>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="sidebar-link" data-section="dashboard">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+            <a href="#" class="sidebar-link" data-section="bookings">
+                <i class="bi bi-calendar-check"></i> Bookings
+            </a>
+            <a href="{{ url_for('main.create_slot') }}" class="sidebar-link">
+                <i class="bi bi-plus-circle"></i> Create Slot
+            </a>
+            <a href="#" class="sidebar-link" data-section="available-slots">
+                <i class="bi bi-clock"></i> Available Slots
+            </a>
+            <a href="{{ url_for('main.manage_candidates') }}" class="sidebar-link">
+                <i class="bi bi-people"></i> Manage Candidates
+            </a>
+            <a href="#" class="sidebar-link" data-section="notifications">
+                <i class="bi bi-bell"></i> Notifications
+            </a>
+            <a href="#" class="sidebar-link" data-section="reports">
+                <i class="bi bi-graph-up"></i> Reports
+            </a>
+            <a href="{{ url_for('main.logout') }}" class="sidebar-link sidebar-logout">
+                <i class="bi bi-box-arrow-right"></i> Logout
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Dashboard Section -->
+        <div id="section-dashboard" class="content-section">
+            <div class="dashboard">
+                <div class="dashboard-content">
+                    <p class="text-muted text-center mt-5">Select an option from the sidebar to get started.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bookings Section -->
+        <div id="section-bookings" class="content-section">
+            <div class="dashboard">
+                <div class="dashboard-header">
+                    <h2>Bookings</h2>
+                    <button id="backToDashboardBtn" class="btn btn-outline-secondary" style="display: none;">
+                        <i class="bi bi-arrow-left"></i> Back to Dashboard
+                    </button>
+                </div>
+                <div class="dashboard-content">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0">All Bookings</h4>
+                        </div>
+                        <div class="card-body">
+                            {% if bookings %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Candidate Name</th>
+                                            <th>Company Name</th>
+                                            <th>Technology</th>
+                                            <th>Interview Round</th>
+                                            <th>License</th>
+                                            <th>Interview Date</th>
+                                            <th>Interview Time</th>
+                                            <th>Support Person</th>
+                                            <th>Status</th>
+                                            <th>Remarks</th>
+                                            <th>Interview Support</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for booking in bookings %}
+                                        <tr>
+                                            <td>{{ booking.user_name }}</td>
+                                            <td>{{ booking.company_name or '-' }}</td>
+                                            <td>{{ booking.technology or '-' }}</td>
+                                            <td>{{ booking.interview_round or '-' }}</td>
+                                            <td>{{ booking.license_name }}</td>
+                                            <td>{{ booking.interview_date }}</td>
+                                            <td>{{ booking.start_time }} - {{ booking.end_time }}</td>
+                                            <td>
+                                                {% if booking.support_person %}
+                                                    <span class="badge bg-info">{{ booking.support_person }}</span>
+                                                {% else %}
+                                                    <form action="{{ url_for('main.assign_support_person_route', booking_id=booking.id) }}" method="POST" style="display: inline;">
+                                                        <input type="text" name="support_person" class="form-control form-control-sm" placeholder="Assign support" required>
+                                                        <button type="submit" class="btn btn-sm btn-outline-primary mt-1">Assign</button>
+                                                    </form>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-success">{{ booking.booking_status }}</span>
+                                            </td>
+                                            <td>{{ booking.remarks or '-' }}</td>
+                                            <td>
+                                                <div class="btn-group-vertical">
+                                                    <a href="{{ url_for('main.candidate_history', user_id=booking.user_id) }}"
+                                                       class="btn btn-sm btn-info mb-1">
+                                                       View Candidate
+                                                    </a>
+                                                    <button type="button"
+                                                       class="btn btn-sm btn-primary mb-1 reschedule-btn"
+                                                       data-booking-id="{{ booking.id }}"
+                                                       data-bs-toggle="modal"
+                                                       data-bs-target="#rescheduleModal">
+                                                       Reschedule
+                                                    </button>
+                                                    <a href="{{ url_for('main.create_candidate_slot', user_id=booking.user_id) }}"
+                                                          class="btn btn-sm btn-warning mb-1">
+                                                          Create extra Slot
+                                                    </a>
+                                                    {% if booking.booking_status == 'confirmed' and not booking.interview_completed %}
+                                                    <a href="{{ url_for('main.complete_interview_route', booking_id=booking.id) }}"
+                                                       class="btn btn-sm btn-success mt-1">
+                                                       Complete Interview
+                                                    </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <p class="text-muted">No bookings yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Slots Section -->
+        <div id="section-available-slots" class="content-section">
+            <div class="dashboard">
+                <div class="dashboard-header">
+                    <h2>Available Slots</h2>
+                </div>
+                <div class="dashboard-content">
+                    <div class="card mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0">Available Interview Slots</h4>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted">Select a date to view available slots.</p>
+                            <div class="mb-3">
+                                <label for="interviewDateSelector" class="form-label">Select Date:</label>
+                                <input type="date" id="interviewDateSelector" class="form-control">
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="availableSlotsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>License</th>
+                                            <th>Date</th>
+                                            <th>Start Time</th>
+                                            <th>End Time</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td colspan="5" class="text-center">Select a date to view slots</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Candidates Section -->
+        <div id="section-candidates" class="content-section">
+            <div class="dashboard">
+                <div class="dashboard-header">
+                    <h2>Candidates</h2>
+                </div>
+                <div class="dashboard-content">
+                    <div class="card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h4 class="mb-0">Candidate Management</h4>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted">Click "View Candidate" in the Bookings section to view candidate details.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Section -->
+        <div id="section-notifications" class="content-section">
+            <div class="dashboard">
+                <div class="dashboard-header">
+                    <h2>Notifications</h2>
+                </div>
+                <div class="dashboard-content">
+                    <div class="card mb-4">
+                        <div class="card-header bg-warning text-white">
+                            <h4 class="mb-0">Notifications</h4>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted">No new notifications.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports Section -->
+        <div id="section-reports" class="content-section">
+            <div class="dashboard">
+                <div class="dashboard-header">
+                    <h2>Reports</h2>
+                </div>
+                <div class="dashboard-content">
+                    <div class="card mb-4">
+                        <div class="card-header bg-secondary text-white">
+                            <h4 class="mb-0">Reports</h4>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted">Reports feature coming soon.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reschedule Modal -->
+<div class="modal fade" id="rescheduleModal" tabindex="-1" aria-labelledby="rescheduleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="rescheduleModalLabel">Reschedule Interview</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="rescheduleModalContent">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
