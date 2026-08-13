@@ -877,7 +877,7 @@ def initialize_default_licenses_and_slots():
         license2 = cursor.fetchone()
         if not license2:
             cursor.execute('INSERT INTO licenses (name, description) VALUES (?, ?)', ('Moon', 'Default interview license 2'))
-            license2_id = cursor.lastrowid
+            license2_id = cursor.lastrow
         else:
             license2_id = license2['id']
         
