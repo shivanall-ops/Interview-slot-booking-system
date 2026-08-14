@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from database import register_user, login_user, get_user_by_id, get_all_users
 from database import create_interview_slot, get_all_interview_slots, get_interview_slot_by_id, update_interview_slot, delete_interview_slot
-from database import get_available_slots, create_booking, get_user_bookings, get_all_bookings, reschedule_interview
+from database import get_available_slots, create_booking, get_user_bookings, get_all_bookings, get_todays_interviews, reschedule_interview
 from database import create_license, get_all_licenses, get_license_by_id
 from database import get_booking_by_id, update_booking, cancel_booking
 from database import create_notification, get_notifications, mark_notification_read, get_unread_notification_count
@@ -106,6 +106,17 @@ def hr_dashboard():
     notifications = get_notifications(session['user_id'], limit=10)
     unread_count = get_unread_notification_count(session['user_id'])
     return render_template('hr_dashboard.html', user_name=session['user_name'], slots=slots, bookings=bookings, licenses=licenses, stats=stats, notifications=notifications, unread_count=unread_count)
+
+@app_routes.route('/todays-interviews')
+def todays_interviews():
+    if 'user_id' not in session or session['user_role'] != 'hr':
+        return redirect(url_for('main.login'))
+    todays_bookings = get_todays_interviews()
+    licenses = get_all_licenses()
+    stats = get_dashboard_stats()
+    notifications = get_notifications(session['user_id'], limit=10)
+    unread_count = get_unread_notification_count(session['user_id'])
+    return render_template('hr_dashboard.html', user_name=session['user_name'], todays_bookings=todays_bookings, licenses=licenses, stats=stats, notifications=notifications, unread_count=unread_count)
 
 @app_routes.route('/candidate-dashboard')
 def candidate_dashboard():

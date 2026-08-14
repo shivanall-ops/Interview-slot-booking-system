@@ -721,6 +721,26 @@ def get_all_bookings():
     
     return [dict(booking) for booking in bookings]
 
+def get_todays_interviews():
+    """Get today's interview bookings with user, slot, and license details for HR view."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        SELECT b.*, u.name as user_name, u.email as user_email, 
+               s.interview_date, s.start_time, s.end_time, s.status as slot_status, l.name as license_name
+        FROM bookings b 
+        JOIN users u ON b.user_id = u.id
+        JOIN interview_slots s ON b.slot_id = s.id 
+        JOIN licenses l ON s.license_id = l.id
+        WHERE s.interview_date = DATE('now')
+        ORDER BY s.start_time
+    ''')
+    bookings = cursor.fetchall()
+    conn.close()
+    
+    return [dict(booking) for booking in bookings]
+
 def reschedule_interview(booking_id, new_slot_id):
     import sqlite3
 
