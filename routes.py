@@ -22,15 +22,39 @@ from database import (
 
 app_routes = Blueprint('main', __name__)
 
-@app_routes.route('/')
+@app_routes.route('/', methods=['GET', 'POST'])
 def home():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        
+        user = login_user(email, password)
+        
+        if user:
+            session['user_id'] = user['id']
+            session['user_name'] = user['name']
+            session['user_role'] = user['role']
+            
+            # Check if user needs to change password
+            force_password_change = user['force_password_change'] if 'force_password_change' in user else 0
+            if force_password_change == 1:
+                flash('You must change your password before continuing.', 'info')
+                return redirect(url_for('main.change_password'))
+            
+            if user['role'] == 'hr':
+                return redirect(url_for('main.hr_dashboard'))
+            else:
+                return redirect(url_for('main.candidate_dashboard'))
+        else:
+            flash('Invalid email or password or account is inactive.', 'error')
+    
     return render_template('index.html')
 
 @app_routes.route('/register', methods=['GET', 'POST'])
 def register():
     # Public registration is disabled - candidates must be created by HR
     flash('Public registration is disabled. Please contact HR for account creation.', 'error')
-    return redirect(url_for('main.login'))
+    return redirect(url_for('main.home'))
 
 @app_routes.route('/login', methods=['GET', 'POST'])
 def login():
@@ -64,12 +88,12 @@ def login():
 def logout():
     session.clear()
     flash('You have been logged out.', 'success')
-    return redirect(url_for('main.login'))
+    return redirect(url_for('main.home'))
 
 @app_routes.route('/change-password', methods=['GET', 'POST'])
 def change_password():
     if 'user_id' not in session:
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
     
     if request.method == 'POST':
         new_password = request.form.get('new_password')
@@ -98,7 +122,7 @@ def change_password():
 @app_routes.route('/hr-dashboard')
 def hr_dashboard():
     if 'user_id' not in session or session['user_role'] != 'hr':
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
     slots = get_all_interview_slots()
     bookings = get_all_bookings()
     licenses = get_all_licenses()
@@ -110,7 +134,7 @@ def hr_dashboard():
 @app_routes.route('/todays-interviews')
 def todays_interviews():
     if 'user_id' not in session or session['user_role'] != 'hr':
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
     todays_bookings = get_todays_interviews()
     licenses = get_all_licenses()
     stats = get_dashboard_stats()
@@ -121,7 +145,7 @@ def todays_interviews():
 @app_routes.route('/candidate-dashboard')
 def candidate_dashboard():
     if 'user_id' not in session or session['user_role'] != 'candidate':
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
 
     available_slots = []
 
@@ -161,7 +185,7 @@ def candidate_dashboard():
 @app_routes.route('/book-slot/<int:slot_id>', methods=['POST'])
 def book_slot(slot_id):
     if 'user_id' not in session or session['user_role'] != 'candidate':
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
 
     company_name = request.form.get('company_name')
     technology = request.form.get('technology')
@@ -204,7 +228,7 @@ def book_slot(slot_id):
 @app_routes.route('/create-slot', methods=['GET', 'POST'])
 def create_slot():
     if 'user_id' not in session or session['user_role'] != 'hr':
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
     
     licenses = get_all_licenses()
     
@@ -224,7 +248,7 @@ def create_slot():
 @app_routes.route('/edit-slot/<int:slot_id>', methods=['GET', 'POST'])
 def edit_slot(slot_id):
     if 'user_id' not in session or session['user_role'] != 'hr':
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
     
     slot = get_interview_slot_by_id(slot_id)
     licenses = get_all_licenses()
@@ -249,7 +273,7 @@ def edit_slot(slot_id):
 @app_routes.route('/delete-slot/<int:slot_id>', methods=['POST'])
 def delete_slot(slot_id):
     if 'user_id' not in session or session['user_role'] != 'hr':
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
     
     delete_interview_slot(slot_id)
     flash('Interview slot deleted successfully!', 'success')
@@ -265,7 +289,7 @@ def reschedule_interview_route(booking_id):
         print(f"DEBUG: Unauthorized - user_id in session: {'user_id' in session}, user_role: {session.get('user_role')}")
         if is_ajax:
             return jsonify({'success': False, 'error': 'Unauthorized'}), 401
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
 
     booking = get_booking_by_id(booking_id)
     print(f"DEBUG: Booking found: {booking is not None}")
@@ -327,7 +351,7 @@ def candidate_change_slot(booking_id):
     if 'user_id' not in session or session['user_role'] != 'candidate':
         if is_ajax:
             return jsonify({'success': False, 'error': 'Unauthorized'}), 401
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
 
     booking = get_booking_by_id(booking_id)
 
@@ -430,7 +454,7 @@ def candidate_change_slot(booking_id):
 @app_routes.route('/edit-booking/<int:booking_id>', methods=['GET', 'POST'])
 def edit_booking(booking_id):
     if 'user_id' not in session or session['user_role'] != 'hr':
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
     
     booking = get_booking_by_id(booking_id)
     
@@ -453,7 +477,7 @@ def edit_booking(booking_id):
 @app_routes.route('/create-candidate-slot/<int:user_id>', methods=['GET', 'POST'])
 def create_candidate_slot(user_id):
     if 'user_id' not in session or session['user_role'] != 'hr':
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
 
     candidate = get_user_by_id(user_id)
 
@@ -506,7 +530,7 @@ def create_candidate_slot(user_id):
 @app_routes.route('/cancel-booking/<int:booking_id>', methods=['POST'])
 def cancel_booking_route(booking_id):
     if 'user_id' not in session or session['user_role'] != 'hr':
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
     
     booking = get_booking_by_id(booking_id)
     result = cancel_booking(booking_id)
@@ -524,7 +548,7 @@ def cancel_booking_route(booking_id):
 @app_routes.route('/candidate-cancel-booking/<int:booking_id>', methods=['POST'])
 def candidate_cancel_booking_route(booking_id):
     if 'user_id' not in session or session['user_role'] != 'candidate':
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
     
     booking = get_booking_by_id(booking_id)
     
@@ -553,7 +577,7 @@ def candidate_cancel_booking_route(booking_id):
 @app_routes.route('/mark-notification-read/<int:notification_id>', methods=['POST'])
 def mark_notification_read_route(notification_id):
     if 'user_id' not in session:
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
     
     mark_notification_read(notification_id)
     
@@ -565,7 +589,7 @@ def mark_notification_read_route(notification_id):
 @app_routes.route('/candidate-history/<int:user_id>')
 def candidate_history(user_id):
     if 'user_id' not in session or session['user_role'] != 'hr':
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
     
     candidate = get_user_by_id(user_id)
     history = get_candidate_interview_history(user_id)
@@ -576,7 +600,7 @@ def candidate_history(user_id):
 @app_routes.route('/complete-interview/<int:booking_id>', methods=['GET', 'POST'])
 def complete_interview_route(booking_id):
     if 'user_id' not in session or session['user_role'] != 'hr':
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
     
     booking = get_booking_by_id(booking_id)
     
@@ -599,7 +623,7 @@ def complete_interview_route(booking_id):
 @app_routes.route('/assign-support/<int:booking_id>', methods=['POST'])
 def assign_support_person_route(booking_id):
     if 'user_id' not in session or session['user_role'] != 'hr':
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
     
     support_person = request.form.get('support_person')
     
@@ -614,7 +638,7 @@ def assign_support_person_route(booking_id):
 @app_routes.route('/add-previous-history', methods=['POST'])
 def add_previous_history_route():
     if 'user_id' not in session or session['user_role'] != 'candidate':
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
     
     company_name = request.form.get('company_name')
     interview_round = request.form.get('interview_round')
@@ -672,7 +696,7 @@ def get_slots_by_date_route():
 @app_routes.route('/manage-candidates')
 def manage_candidates():
     if 'user_id' not in session or session['user_role'] != 'hr':
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
     
     candidates = get_candidates()
     return render_template('manage_candidates.html', candidates=candidates)
@@ -680,7 +704,7 @@ def manage_candidates():
 @app_routes.route('/create-candidate', methods=['GET', 'POST'])
 def create_candidate():
     if 'user_id' not in session or session['user_role'] != 'hr':
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
     
     if request.method == 'POST':
         name = request.form.get('name')
@@ -706,7 +730,7 @@ def create_candidate():
 @app_routes.route('/edit-candidate/<int:user_id>', methods=['GET', 'POST'])
 def edit_candidate(user_id):
     if 'user_id' not in session or session['user_role'] != 'hr':
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
     
     candidate = get_user_by_id(user_id)
     
@@ -736,7 +760,7 @@ def edit_candidate(user_id):
 @app_routes.route('/toggle-candidate-status/<int:user_id>', methods=['POST'])
 def toggle_candidate_status(user_id):
     if 'user_id' not in session or session['user_role'] != 'hr':
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
     
     candidate = get_user_by_id(user_id)
     
@@ -756,7 +780,7 @@ def toggle_candidate_status(user_id):
 @app_routes.route('/reset-candidate-password/<int:user_id>', methods=['GET', 'POST'])
 def reset_candidate_password(user_id):
     if 'user_id' not in session or session['user_role'] != 'hr':
-        return redirect(url_for('main.login'))
+        return redirect(url_for('main.home'))
     
     candidate = get_user_by_id(user_id)
     
