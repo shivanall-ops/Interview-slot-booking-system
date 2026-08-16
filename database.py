@@ -562,16 +562,6 @@ def generate_slots_for_date_safe(interview_date):
             return None
         moon_license_id = moon_license['id']
 
-        # Check if slots already exist for this date
-        cursor.execute('SELECT COUNT(*) as count FROM interview_slots WHERE interview_date = ?', (interview_date,))
-        existing_count = cursor.fetchone()['count']
-
-        if existing_count > 0:
-            # Slots already exist, return available slots for this date
-            conn.rollback()
-            conn.close()
-            return get_available_slots(interview_date)
-
         # Define interview timings (10 slots per license)
         interview_timings = [
             ('09:00 AM', '10:00 AM'),
@@ -586,19 +576,37 @@ def generate_slots_for_date_safe(interview_date):
             ('06:00 PM', '07:00 PM'),
         ]
 
-        # Create slots for Earth license
-        for start, end in interview_timings:
-            cursor.execute('''
-                INSERT INTO interview_slots (license_id, interview_date, start_time, end_time, status)
-                VALUES (?, ?, ?, ?, ?)
-            ''', (earth_license_id, interview_date, start, end, 'available'))
+        # Get existing slots for this date to avoid creating duplicates
+        cursor.execute('''
+            SELECT license_id, start_time, end_time
+            FROM interview_slots
+            WHERE interview_date = ?
+        ''', (interview_date,))
+        existing_slots = cursor.fetchall()
+        
+        # Create a set of existing slot identifiers for quick lookup
+        existing_slot_keys = set()
+        for slot in existing_slots:
+            key = (slot['license_id'], slot['start_time'], slot['end_time'])
+            existing_slot_keys.add(key)
 
-        # Create slots for Moon license
+        # Create only missing Earth slots
         for start, end in interview_timings:
-            cursor.execute('''
-                INSERT INTO interview_slots (license_id, interview_date, start_time, end_time, status)
-                VALUES (?, ?, ?, ?, ?)
-            ''', (moon_license_id, interview_date, start, end, 'available'))
+            slot_key = (earth_license_id, start, end)
+            if slot_key not in existing_slot_keys:
+                cursor.execute('''
+                    INSERT INTO interview_slots (license_id, interview_date, start_time, end_time, status)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (earth_license_id, interview_date, start, end, 'available'))
+
+        # Create only missing Moon slots
+        for start, end in interview_timings:
+            slot_key = (moon_license_id, start, end)
+            if slot_key not in existing_slot_keys:
+                cursor.execute('''
+                    INSERT INTO interview_slots (license_id, interview_date, start_time, end_time, status)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (moon_license_id, interview_date, start, end, 'available'))
 
         # Commit transaction
         conn.commit()

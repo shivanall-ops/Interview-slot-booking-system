@@ -319,6 +319,90 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Handle interview date selector change for Available Slots
+    var interviewDateSelector = document.getElementById('interviewDateSelector');
+    if (interviewDateSelector) {
+        interviewDateSelector.addEventListener('change', function() {
+            var selectedDate = this.value;
+            if (!selectedDate) return;
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/available-slots-by-date?interview_date=' + selectedDate, true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        updateAvailableSlotsTable(response.earth_slots, response.moon_slots);
+                    } else {
+                        document.querySelector('#availableSlotsTable tbody').innerHTML =
+                            '<tr><td colspan="5" class="text-center text-danger">' + response.error + '</td></tr>';
+                    }
+                } else {
+                    document.querySelector('#availableSlotsTable tbody').innerHTML =
+                        '<tr><td colspan="5" class="text-center text-danger">Error loading available slots.</td></tr>';
+                }
+            };
+            xhr.onerror = function() {
+                document.querySelector('#availableSlotsTable tbody').innerHTML =
+                    '<tr><td colspan="5" class="text-center text-danger">Error loading available slots.</td></tr>';
+            };
+            xhr.send();
+        });
+    }
+
+    function updateAvailableSlotsTable(earthSlots, moonSlots) {
+        var tbody = document.querySelector('#availableSlotsTable tbody');
+        var allSlots = earthSlots.concat(moonSlots);
+
+        if (allSlots.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No available interview slots for the selected date.</td></tr>';
+            return;
+        }
+
+        var html = '';
+        allSlots.forEach(function(slot) {
+            html += '<tr>';
+            html += '<td>' + slot.license_name + '</td>';
+            html += '<td>' + slot.interview_date + '</td>';
+            html += '<td>' + slot.start_time + '</td>';
+            html += '<td>' + slot.end_time + '</td>';
+            html += '<td>';
+            html += '<button type="button" class="btn btn-primary btn-sm book-slot-btn" ';
+            html += 'data-bs-toggle="modal" ';
+            html += 'data-bs-target="#bookingModal" ';
+            html += 'data-slot-id="' + slot.id + '" ';
+            html += 'data-slot-date="' + slot.interview_date + '" ';
+            html += 'data-slot-start="' + slot.start_time + '" ';
+            html += 'data-slot-end="' + slot.end_time + '" ';
+            html += 'data-slot-license="' + slot.license_name + '">Book Slot</button>';
+            html += '</td>';
+            html += '</tr>';
+        });
+
+        tbody.innerHTML = html;
+    }
+
+    // Event delegation for Book Slot buttons (handles dynamically created buttons)
+    document.addEventListener('click', function(event) {
+        var button = event.target.closest('.book-slot-btn');
+        if (!button) return;
+
+        var slotId = button.getAttribute('data-slot-id');
+        var slotDate = button.getAttribute('data-slot-date');
+        var slotStart = button.getAttribute('data-slot-start');
+        var slotEnd = button.getAttribute('data-slot-end');
+        var slotLicense = button.getAttribute('data-slot-license');
+
+        // Update modal with slot details
+        document.getElementById('slotDetails').textContent =
+            slotDate + ' ' + slotStart + ' - ' + slotEnd + ' (' + slotLicense + ')';
+
+        // Update booking form action
+        var bookingForm = document.getElementById('bookingForm');
+        bookingForm.action = '/book-slot/' + slotId;
+    });
+
     // Handle Change Slot button click
     document.querySelectorAll('.change-slot-btn').forEach(function(button) {
         button.addEventListener('click', function() {

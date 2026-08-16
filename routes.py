@@ -182,6 +182,41 @@ def candidate_dashboard():
         unread_count=unread_count,
         previous_history=previous_history
     )
+@app_routes.route('/available-slots-by-date', methods=['GET'])
+def available_slots_by_date():
+    """Get available slots for a specific date via AJAX."""
+    if 'user_id' not in session or session['user_role'] != 'candidate':
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    interview_date = request.args.get('interview_date')
+    
+    if not interview_date:
+        return jsonify({'error': 'Date is required'}), 400
+    
+    try:
+        # Use generate_slots_for_date_safe which:
+        # 1. Checks if slots exist for the date
+        # 2. If they exist, returns available slots (excluding booked ones)
+        # 3. If they don't exist, generates 20 slots (10 Earth + 10 Moon) and returns available slots
+        slots = generate_slots_for_date_safe(interview_date)
+        
+        if slots is None:
+            return jsonify({'error': 'Failed to get available slots'}), 500
+        
+        # Separate slots by license
+        earth_slots = [slot for slot in slots if slot['license_name'] == 'Earth']
+        moon_slots = [slot for slot in slots if slot['license_name'] == 'Moon']
+        
+        return jsonify({
+            'success': True,
+            'earth_slots': earth_slots,
+            'moon_slots': moon_slots,
+            'total_slots': len(slots)
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app_routes.route('/book-slot/<int:slot_id>', methods=['POST'])
 def book_slot(slot_id):
     if 'user_id' not in session or session['user_role'] != 'candidate':
