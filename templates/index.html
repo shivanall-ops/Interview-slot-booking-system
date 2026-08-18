@@ -9,67 +9,27 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
         .split-container {
-            min-height: 100vh;
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: auto;
+            padding: 20px;
         }
 
         .branding-section {
-            flex: 0 0 50%;
-            max-width: 50%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 40px;
-            animation: fadeInLeft 1s ease-out;
+            padding: 20px;
+            animation: fadeInDown 0.8s ease-out;
         }
 
-        @keyframes fadeInLeft {
+        @keyframes fadeInDown {
             from {
                 opacity: 0;
-                transform: translateX(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .login-section {
-            flex: 0 0 50%;
-            max-width: 50%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 40px;
-            animation: fadeInRight 1s ease-out;
-        }
-
-        @keyframes fadeInRight {
-            from {
-                opacity: 0;
-                transform: translateX(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .branding-logo {
-            max-width: 400px;
-            width: 100%;
-            height: auto;
-            margin-bottom: 30px;
-            animation: slideDown 0.8s ease-out;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
+                transform: translateY(-20px);
             }
             to {
                 opacity: 1;
@@ -77,34 +37,16 @@
             }
         }
 
-        .branding-title {
-            font-size: 42px;
-            font-weight: bold;
-            color: #ffffff;
-            text-align: center;
-            margin-bottom: 15px;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
-            animation: slideUp 0.8s ease-out 0.2s both;
+        .login-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
         }
 
-        .branding-subtitle {
-            font-size: 20px;
-            color: #e0e0e0;
-            text-align: center;
-            margin-bottom: 20px;
-            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
-            animation: slideUp 0.8s ease-out 0.4s both;
-        }
-
-        .branding-tagline {
-            font-size: 16px;
-            color: #b0b0b0;
-            text-align: center;
-            font-style: italic;
-            animation: slideUp 0.8s ease-out 0.6s both;
-        }
-
-        @keyframes slideUp {
+        @keyframes fadeInUp {
             from {
                 opacity: 0;
                 transform: translateY(20px);
@@ -115,21 +57,59 @@
             }
         }
 
-        .login-container {
-            max-width: 420px;
+        .branding-logo {
+            max-width: 350px;
             width: 100%;
-            padding: 30px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+
+        .branding-title {
+            font-size: 36px;
+            font-weight: bold;
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .branding-subtitle {
+            font-size: 18px;
+            color: #e0e0e0;
+            text-align: center;
+            margin-bottom: 8px;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .branding-tagline {
+            font-size: 14px;
+            color: #b0b0b0;
+            text-align: center;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+
+        .login-container {
+            width: 400px;
+            height: 400px;
+            max-width: 90vw;
+            aspect-ratio: 1 / 1;
+            box-sizing: border-box;
+            padding: 25px;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 12px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .login-container h2 {
             text-align: center;
             color: #333;
-            margin-bottom: 20px;
-            font-size: 24px;
+            margin-bottom: 15px;
+            font-size: 22px;
         }
 
         .login-container button {
@@ -173,24 +153,24 @@
         }
 
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
             color: #555;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .form-group input {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             border: 1px solid #ddd;
             border-radius: 6px;
             font-size: 14px;
-            height: 44px;
+            height: 40px;
         }
 
         .form-group input:focus {
@@ -200,10 +180,10 @@
         }
 
         .alert {
-            padding: 12px 16px;
-            margin: 0 0 16px 0;
+            padding: 10px 12px;
+            margin: 0 0 12px 0;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .alert-success {
@@ -225,37 +205,19 @@
         }
 
         /* Responsive Design */
-        @media (max-width: 992px) {
-            .branding-section,
-            .login-section {
-                flex: 0 0 100%;
-                max-width: 100%;
+        @media (max-width: 768px) {
+            .split-container {
+                padding: 15px;
             }
 
             .branding-section {
-                padding: 30px 20px;
-                min-height: auto;
+                padding: 15px;
             }
 
             .login-section {
-                padding: 30px 20px;
-                min-height: auto;
+                padding: 15px;
             }
 
-            .branding-logo {
-                max-width: 350px;
-            }
-
-            .branding-title {
-                font-size: 36px;
-            }
-
-            .branding-subtitle {
-                font-size: 18px;
-            }
-        }
-
-        @media (max-width: 768px) {
             .branding-logo {
                 max-width: 300px;
             }
@@ -269,20 +231,29 @@
             }
 
             .branding-tagline {
-                font-size: 14px;
+                font-size: 13px;
             }
 
             .login-container {
-                padding: 25px;
-            }
-
-            .branding-section,
-            .login-section {
-                padding: 25px 15px;
+                width: 350px;
+                height: 350px;
+                padding: 20px;
             }
         }
 
         @media (max-width: 480px) {
+            .split-container {
+                padding: 10px;
+            }
+
+            .branding-section {
+                padding: 10px;
+            }
+
+            .login-section {
+                padding: 10px;
+            }
+
             .branding-logo {
                 max-width: 250px;
             }
@@ -296,16 +267,13 @@
             }
 
             .branding-tagline {
-                font-size: 13px;
+                font-size: 12px;
             }
 
             .login-container {
-                padding: 20px;
-            }
-
-            .branding-section,
-            .login-section {
-                padding: 20px 10px;
+                width: 320px;
+                height: 320px;
+                padding: 18px;
             }
         }
     </style>

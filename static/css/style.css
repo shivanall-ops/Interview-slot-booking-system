@@ -78,7 +78,7 @@ h1 {
 ============================== */
 .auth-container{
     max-width: 440px;
-    margin: 40px auto;
+    margin: 20px auto;
     padding: 20px;
     background: rgba(255, 255, 255, 0.95);
     border-radius: 12px;
@@ -274,16 +274,16 @@ h1 {
     background: #0d47a1;
     color: white;
     text-align: center;
-    padding: 16px;
-    font-size: 17px;
+    padding: 12px;
+    font-size: 16px;
     font-weight: 700;
     white-space: nowrap;
 }
 
 .table td {
     vertical-align: middle;
-    padding: 16px;
-    font-size: 15px;
+    padding: 12px;
+    font-size: 14px;
     word-wrap: break-word;
     word-break: break-word;
 }
@@ -409,12 +409,12 @@ h1 {
 .card-header {
     font-weight: bold;
     font-size: 18px;
-    padding: 14px 20px;
+    padding: 12px 16px;
     border-bottom: 1px solid rgba(0,0,0,0.08);
 }
 
 .card-body {
-    padding: 18px;
+    padding: 14px;
 }
 
 .card-text {
@@ -538,7 +538,7 @@ h1 {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     border-radius: 10px;
-    padding: 18px;
+    padding: 14px;
     box-shadow: 0 8px 25px rgba(0,0,0,0.15);
     margin-bottom: 0;
     width: 100%;
@@ -795,86 +795,4 @@ h1 {
         padding: 12px;
         font-size: 14px;
     }
-}
-
-.company-logo{
-    width: 700px;
-    max-width: 90%;
-    height: auto;
-    display: block;
-    margin: 5px auto 5px auto;
-}
-
-.auth-container{
-    max-width: 450px;
-    margin: 10px auto 0;
-    padding: 25px;
-    background: rgba(255,255,255,.95);
-    border-radius: 20px;
-    box-shadow: 0 10px 40px rgba(0,0,0,.3);
-}
-
-.container-fluid{
-    padding-top: 0 !important;
-}
-
-.text-center{
-    margin-bottom: 5px;
-}
-
-/* Remove top white space */
-body {
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-.container-fluid {
-    padding-top: 0 !important;
-    margin-top: 0 !important;
-}
-
-/* Remove space around logo */
-.text-center {
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-.company-logo {
-    display: block;
-    width: 700px;
-    max-width: 90%;
-    height: auto;
-    margin: 0 auto 5px auto !important; /* only 5px below logo */
-    padding: 0 !important;
-}
-
-/* Move login box closer to logo */
-.auth-container {
-    margin: 5px auto 0 auto !important;
-}
-
-/* ===== Login Page Spacing Fix ===== */
-
-.company-logo {
-    width: 700px;
-    max-width: 90%;
-    height: auto;
-    display: block;
-    margin: 0 auto 5px auto !important;
-    padding: 0 !important;
-}
-
-.auth-container {
-    max-width: 450px;
-    margin: 5px auto 0 auto !important;
-    padding: 25px;
-}
-
-.container-fluid {
-    padding-top: 0 !important;
-}
-
-.text-center {
-    margin: 0 !important;
-    padding: 0 !important;
 }
