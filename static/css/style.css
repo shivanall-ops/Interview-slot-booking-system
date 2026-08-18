@@ -34,10 +34,24 @@ body::before {
     padding: 8px;
 }
 
+/* Container with white background for pages outside dashboard */
+.container:not(.container-fluid) {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
 h1 {
     color: #333;
     text-align: center;
     margin-bottom: 10px;
+}
+
+h2 {
+    color: #1e3c72;
+    font-weight: bold;
 }
 
 /* Alert messages */
